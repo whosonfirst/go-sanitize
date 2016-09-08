@@ -4,6 +4,7 @@ package sanitize
 
 import (
 	"regexp"
+	"strconv"
 )
 
 func SanitizeString(input string) (string, error) {
@@ -46,7 +47,7 @@ func SanitizeString(input string) (string, error) {
 
 	if sanitize_strip_reserved {
 
-		pattern = `\p{Cn}` // FIX ME
+		pattern = `\p{Cn}`
 		output, err = scrub(pattern, input)
 
 	} else {
@@ -93,55 +94,21 @@ func SanitizeString(input string) (string, error) {
 	return output, nil
 }
 
-func SanitizeStripOverlong(input string) (string, error) {
+/*
+func SanitizeInt32 (input string) (int32, error) {
 
-	/*
+     return strconv.ParseInt(input, 10, 32)
+}
+*/
 
-		Cal says:
+func SanitizeInt64(input string) (int64, error) {
 
-		invalid bytes: C0-C1, F5-FF
-		overlong 3 bytes: E0[80-9F][80-BF]
-		overlong 4 bytes: F0[80-8F][80-BF][80-BF]
-
-	*/
-
-	pattern := `[\xC0-\xC1\xF5-\xFF]|\xE0[\x80-\x9F][\x80-\xbf]|\xF0[\x80-\x8F][\x80-\xBF][\x80-\xBF]`
-	return scrub(input, pattern)
+	return strconv.ParseInt(input, 10, 64)
 }
 
-func SanitizeCleanUTF8(input string) (string, error) {
+func SanitizeFloat64(input string) (float64, error) {
 
-	var pattern string
-
-	pattern = ""
-	pattern += "([\xC0-\xC1\xF5-\xFF])"                             // invalid bytes
-	pattern += "|([\xC0-\xDF](?=[^\x80-\xBF]|$))"                   // 1-leader without a trailer
-	pattern += "|([\xE0-\xEF](?=[\x80-\xBF]{0,1}([^\x80-\xBF]|$)))" // 2-leader without 2 trailers
-	pattern += "|([\xF0-\xF7](?=[\x80-\xBF]{0,2}([^\x80-\xBF]|$)))" // 3-leader without 3 trailers
-	pattern += "|((?<=[\x00-\x7F]|^)[\x80-\xBF]+)"                  // trailer following a non-leader
-	pattern += "|((?<=[\xC0-\xDF][\x80-\xBF]{1})[\x80-\xBF]+)"      // 1 leader with too many trailers
-	pattern += "|((?<=[\xE0-\xEF][\x80-\xBF]{2})[\x80-\xBF]+)"      // 2 leader with too many trailers
-	pattern += "|((?<=[\xF0-\xF7][\x80-\xBF]{3})[\x80-\xBF]+)"      // 3 leader with too many trailers
-	pattern += "|(\xE0[\x80-\x9F])"                                 // overlong 3-byte
-	pattern += "|(\xF0[\x80-\x8F])"                                 // overlong 4-byte
-
-	tmp, err := scrub(input, pattern)
-
-	if err != nil {
-		return "", err
-	}
-
-	/*
-
-		Cal says:
-
-		one of the reasons this is even slower than it needs to be is that
-		we have to apply it twice. seems to be related to overlapping
-		assertions, but that shouldn't be the case. argh!
-
-	*/
-
-	return scrub(tmp, pattern)
+	return strconv.ParseFloat(input, 64)
 }
 
 func scrub(input string, pattern string) (string, error) {
