@@ -7,6 +7,7 @@ import (
 	"os"
 	"sanitize"
 	"strconv"
+	"strings"
 	_ "unicode"
 )
 
@@ -15,7 +16,7 @@ func main() {
 	opts := sanitize.DebugOptions()
 
 	// see below...
-	
+
 	codepoints := [][]string{
 		{"00000000", "00001000"},
 		{"00001110", "00011111"},
@@ -33,7 +34,7 @@ func main() {
 		// I studied painting... leave me alone or just be
 		// gentle when you show me how to do this the right
 		// way... (20160909/thisisaaronland)
-		
+
 		lo, _ := strconv.ParseUint(pair[0], 2, 32)
 		hi, _ := strconv.ParseUint(pair[1], 2, 32)
 
@@ -45,7 +46,15 @@ func main() {
 			c, _ := sanitize.SanitizeString(string(r), opts)
 
 			if c != " { SANITIZED } " {
-				fmt.Printf("%b %U '%s'\n", r, r, c)
+
+				h := make([]string, 0)
+				s := string(r)
+
+				for j := 0; j < len(s); j++ {
+					h = append(h, fmt.Sprintf("% x", s[j]))
+				}
+
+				fmt.Printf("[%s-%s] %b %U %+q %s\n", pair[0], pair[1], r, r, r, strings.Join(h, " "))
 			}
 		}
 	}
