@@ -60,7 +60,8 @@ func init() {
 
 			go-sanitize says we aren't able to match '11100000000000000000 U+E0000 '\U000e0000'  f3  a0  80  80'
 			through '11100000000001111110 U+E007E '\U000e007e'  f3  a0  81  be' because... again, I am not really
-			sure and for some reason "\\x{E0000}-\\x{E007F}" doesn't work either... (20160909/thisisaaronland)
+			sure and for some reason neither "\\x{E0000}-\\x{E007F}" or "\\x{000e0000}-\\x{000e007f}" work either...
+			(20160909/thisisaaronland)
 
 			lib_sanitize goes on to say:
 
