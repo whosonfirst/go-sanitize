@@ -38,12 +38,22 @@ func init() {
 				lib_sanitize goes on to say:
 
 				U+FEFF			1111111011111111				\xEF\xBB\xBF				\xEF\xBB\xBF
+
+				go-sanitize says we are actually doing this for "U+FEFF" because the pattern in lib_sanitize
+				does not seem to work... (20160909/thisisaaronland)
+
+				"\x{FEFF}"
+
+				lib_sanitize goes on to say:
+				
 				U+206A..U+206F		10000001101010..10000001101111			\xE2\x81\xAA..\xE2\x81\xAF		\xE2\x81[\xAA-\xAF]
 				U+FFF9..U+FFFA		1111111111111001..1111111111111010		\xEF\xBF\xB9..\xEF\xBF\xBA		\xEF\xBF[\xB9-\xBA]
 
-				go-sanitize says we aren't able to match '1111111111111001 U+FFF9 '\ufff9'  ef  bf  b9' because... I have no
-				idea (20160909/thisisaaronland)
+				go-sanitize says we are actually doing this for "U+FFF9" because the pattern in lib_sanitize
+				does not seem to work... (20160909/thisisaaronland)
 
+				"\x{FFF9}"
+				
 				lib_sanitize goes on to say:
 
 				U+E0000..U+E007F	11100000000000000000..11100000000001111111	\xF3\xA0\x80\x80..\xF3\xA0\x81\xBF	\xF3\xA0[\x80-\x81][\x80-\xBF]
@@ -65,8 +75,10 @@ func init() {
 		"\\x7F", // deviates from lib_sanitize
 		"(?:\\x7F|\\xC2)?[\\x80-\\x84\\x86-\\x9F]", // deviates from lib_sanitize
 		"\\xEF\\xBB\\xBF",
+		"\\x{FEFF}",	// deviates from lib_sanitize
 		"\\xE2\\x81[\\xAA-\\xAF]",
-		"\\xEF\\xBF[\\xB9-\\xBA]",              // does not always work (see above)
+		"\\x{FFF9}",	// deviates from lib_sanitize
+		"\\xEF\\xBF[\\xB9-\\xBA]",            
 		"\\xF3\\xA0[\\x80-\\x81][\\x80-\\xBF]", // does not always work (see above)
 		"\\xED[\\xA0-\\xBF][\\x80-\\xBF]",
 		"\\xF4[\\x90-\\xbf][\\x80-\\xbf][\\x80-\\xbf]",
@@ -91,12 +103,12 @@ func init() {
 
 		invalid characters, as in:
 
-			s := "\xF0\xBF"
-			r,_ := utf8.DecodeRuneInString(s)
-			fmt.Printf("%+q\n", r)
-			fmt.Printf("%.8b\n", r)
+		s := "\xF0\xBF"
+		r,_ := utf8.DecodeRuneInString(s)
+		fmt.Printf("%+q\n", r)
+		fmt.Printf("%.8b\n", r)
 
-			1111111111111101	\ufffd		F4 8F (and so on...)
+		1111111111111101	\ufffd		F4 8F (and so on...)
 
 	*/
 

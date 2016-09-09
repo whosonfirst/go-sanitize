@@ -78,16 +78,18 @@ func main() {
 
 	fmt.Printf("total: %d ok: %d fail: %d\n", total, ok, fail)
 
-	os.Exit(0)
-
 	input := "foo bar\nbaz ok: '\u2318' BAD:'\u0007' BAD:'\uFEFF' BAD:'\u2029' BAD:'\u0007' BAD:'\u007F' BAD:'\x0B' woop wwoop"
 
-	for index, runeValue := range input {
+	/*
+		for index, runeValue := range input {
 
-		s, _ := sanitize.SanitizeString(string(runeValue), opts)
-		fmt.Printf("%#U starts at byte position %d becomes '%s'\n", runeValue, index, s)
-	}
+			s, _ := sanitize.SanitizeString(string(runeValue), opts)
+			fmt.Printf("%#U starts at byte position %d becomes '%s'\n", runeValue, index, s)
+		}
+	*/
 
 	output, _ := sanitize.SanitizeString(input, opts)
 	fmt.Println(output)
+
+	os.Exit(0)
 }
