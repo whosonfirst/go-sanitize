@@ -8,12 +8,16 @@ import (
 	"sanitize"
 	"strconv"
 	"strings"
-	_ "unicode"
+	_ "unicode/utf8"
 )
 
 func main() {
 
 	opts := sanitize.DebugOptions()
+
+	total := 0
+	ok := 0
+	fail := 0
 
 	// see below...
 
@@ -42,10 +46,16 @@ func main() {
 
 		for i := lo; i < hi; i++ {
 
+			total += 1
+
 			r := rune(i)
 			c, _ := sanitize.SanitizeString(string(r), opts)
 
-			if c != " { SANITIZED } " {
+			if c == " { SANITIZED } " {
+				ok += 1
+			} else {
+
+				fail += 1
 
 				h := make([]string, 0)
 				s := string(r)
@@ -58,6 +68,16 @@ func main() {
 			}
 		}
 	}
+
+	/*
+		s := "\xf4\x8f"
+		r, _ := utf8.DecodeRuneInString(s)
+		c, _ := sanitize.SanitizeString(string(r), opts)
+		fmt.Println("WUH", c)
+	*/
+
+	fmt.Printf("total: %d ok: %d fail: %d\n", total, ok, fail)
+
 	os.Exit(0)
 
 	input := "foo bar\nbaz ok: '\u2318' BAD:'\u0007' BAD:'\uFEFF' BAD:'\u2029' BAD:'\u0007' BAD:'\u007F' BAD:'\x0B' woop wwoop"
