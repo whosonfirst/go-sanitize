@@ -3,12 +3,28 @@ package sanitize
 // https://github.com/exflickr/flamework/blob/master/www/include/lib_sanitize.php
 
 import (
-	"log"
+	_ "log"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
-func SanitizeString(input string) (string, error) {
+type Options struct {
+	StripReserved bool
+	AllowNewlines bool
+}
+
+func DefaultOptions() *Options {
+
+	o := Options{
+		StripReserved: false,
+		AllowNewlines: false,
+	}
+
+	return &o
+}
+
+func SanitizeString(input string, options *Options) (string, error) {
 
 	var output string
 	var err error
@@ -38,16 +54,12 @@ func SanitizeString(input string) (string, error) {
 	pattern = `[\x00-\x08]|[\x0E-\x1F]|\x7F|\xC2[\x80-\x84\x86-\x9F]|\xEF\xBB\xBF|\xE2\x81[\xAA-\xAF]|\xEF\xBF[\xB9-\xBA]|\xF3\xA0[\x80-\x81][\x80-\xBF]|\xED[\xA0-\xBF][\x80-\xBF]|\xf4[\x90-\xbf][\x80-\xbf][\x80-\xbf]`
 
 	output, err = scrub(output, pattern)
-	log.Println(output)
 
 	if err != nil {
 		return "", err
 	}
 
-	sanitize_strip_reserved := false // make me an input thingy...
-	allow_newlines := false          // sudo make me an input thingy
-
-	if sanitize_strip_reserved {
+	if options.StripReserved {
 
 		pattern = `\p{Cn}`
 		output, err = scrub(output, pattern)
@@ -65,7 +77,7 @@ func SanitizeString(input string) (string, error) {
 	lf := " "
 	ff := " "
 
-	if allow_newlines {
+	if options.AllowNewlines {
 		lf = "\n"
 		ff = "\n\n"
 	}
@@ -84,14 +96,20 @@ func SanitizeString(input string) (string, error) {
 		"\xEF\xBF\xBD": "?", // U+FFFD
 	}
 
-	_, ok := lookup["bueller"]
+	lookup_keys := make([]string, 0)
 
-	if ok {
-
+	for k, _ := range lookup {
+		lookup_keys = append(lookup_keys, k)
 	}
 
-	// PLEASE MAKE ME WORK (where $map == lookup)
-	// $input = str_replace(array_keys($map), $map, $input);
+	pattern = strings.Join(lookup_keys, "|")
+
+	repl := func(s string) string {
+		return lookup[s]
+	}
+
+	re := regexp.MustCompile(pattern)
+	output = re.ReplaceAllStringFunc(output, repl)
 
 	return output, nil
 }
@@ -120,7 +138,6 @@ func SanitizeFloat64(input string) (float64, error) {
 func scrub(input string, pattern string) (string, error) {
 
 	re := regexp.MustCompile(pattern)
-
 	output := re.ReplaceAllString(input, "")
 	return output, nil
 }
