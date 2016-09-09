@@ -5,7 +5,7 @@ package sanitize
 // https://golang.org/pkg/regexp/syntax/
 
 import (
-       "errors"
+	"errors"
 	_ "log"
 	"regexp"
 	"strconv"
@@ -43,10 +43,10 @@ func DebugOptions() *Options {
 
 func SanitizeString(input string, options *Options) (string, error) {
 
-     if !utf8.ValidString(input){
-     	return "", errors.New("Invalid UTF8 string")
-     }
-     
+	if !utf8.ValidString(input) {
+		return "", errors.New("Invalid UTF8 string")
+	}
+
 	var output string
 	var err error
 
@@ -169,9 +169,14 @@ func SanitizeFloat64(input string) (float64, error) {
 	return strconv.ParseFloat(input, 64)
 }
 
+/*
+	To-do: When the dust settles compile all the regular expressions during init
+	and remove this function (20160909/thisisaaronland)
+*/
+
 func scrub(input string, pattern string, repl string) (string, error) {
 
 	re := regexp.MustCompile(pattern)
-	output := re.ReplaceAllString(input, repl) // see this? that means the code is not ready to use...
+	output := re.ReplaceAllString(input, repl)
 	return output, nil
 }
