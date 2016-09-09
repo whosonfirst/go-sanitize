@@ -4,7 +4,7 @@ A Go port of the Flamework lib_sanitize library.
 
 ## Important
 
-YOU SHOULD NOT TRY TO USE THIS YET. IT DOES NOT WORK. IT HAS NOT BEEN TESTED. IT IS NOT SAFE. NO.
+YOU SHOULD NOT TRY TO USE THIS YET. IT HAS NOT BEEN PROPERLY TESTED. IT IS NOT SAFE. NO.
 
 ## Example
 
@@ -18,13 +18,15 @@ import (
 
 func main() {
 
-     input := "foo bar\nbaz"
+     input := "foo bar\nbaz ok:'\u2318' bad:'\u0007' bad:'\u206E' woop woop"
      
      opts := sanitize.DefaultOptions()
      output, _ := sanitize.SanitizeString(input, opts)
 
      fmt.Println(output)
+
 }
+
 ```     
 
 ## See also

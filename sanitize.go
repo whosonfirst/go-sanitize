@@ -35,7 +35,7 @@ func SanitizeString(input string, options *Options) (string, error) {
 
 	/*
 
-		Cal says:
+		lib_sanitize says:
 
 		filter out evil codepoints
 		U+0000..U+0008	00000000..00001000				\x00..\x08				[\x00-\x08]
@@ -51,7 +51,7 @@ func SanitizeString(input string, options *Options) (string, error) {
 
 	*/
 
-	pattern = `[\x00-\x08]|[\x0E-\x1F]|\x7F|\xC2[\x80-\x84\x86-\x9F]|\xEF\xBB\xBF|\xE2\x81[\xAA-\xAF]|\xEF\xBF[\xB9-\xBA]|\xF3\xA0[\x80-\x81][\x80-\xBF]|\xED[\xA0-\xBF][\x80-\xBF]|\xf4[\x90-\xbf][\x80-\xbf][\x80-\xbf]`
+	pattern = "[\\x00-\\x08]|[\\x0E-\\x1F]|\\x7F|\\xC2[\\x80-\\x84\\x86-\\x9F]|\\xEF\\xBB\\xBF|\\xE2\\x81[\\xAA-\\xAF]|\\xEF\\xBF[\\xB9-\\xBA]|\\xF3\\xA0[\\x80-\\x81][\\x80-\\xBF]|\\xED[\\xA0-\\xBF][\\x80-\\xBF]|\\xf4[\\x90-\\xbf][\\x80-\\xbf][\\x80-\\xbf]"
 
 	output, err = scrub(output, pattern)
 
@@ -66,7 +66,7 @@ func SanitizeString(input string, options *Options) (string, error) {
 
 	} else {
 
-		pattern = `((\xF4\x8F|\xEF|\xF0\x9F|\xF0\xAF|\xF0\xBF|((\xF1|\xF2|\xF3)(\x8F|\x9F|\xAF|\xBF)))\xBF(\xBE|\xBF))|\xEF\xB7[\x90-\xAF]`
+		pattern = "((\\xF4\\x8F|\\xEF|\\xF0\\x9F|\\xF0\\xAF|\\xF0\\xBF|((\\xF1|\\xF2|\\xF3)(\\x8F|\\x9F|\\xAF|\\xBF)))\\xBF(\\xBE|\\xBF))|\\xEF\\xB7[\\x90-\\xAF]"
 		output, err = scrub(output, pattern)
 	}
 
@@ -138,6 +138,6 @@ func SanitizeFloat64(input string) (float64, error) {
 func scrub(input string, pattern string) (string, error) {
 
 	re := regexp.MustCompile(pattern)
-	output := re.ReplaceAllString(input, "")
+	output := re.ReplaceAllString(input, "YAHOOSAYSNO") // see this? that means the code is not ready to use...
 	return output, nil
 }
