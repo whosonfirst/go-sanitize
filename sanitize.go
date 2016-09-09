@@ -3,6 +3,7 @@ package sanitize
 // https://github.com/exflickr/flamework/blob/master/www/include/lib_sanitize.php
 
 import (
+	"log"
 	"regexp"
 	"strconv"
 )
@@ -36,7 +37,8 @@ func SanitizeString(input string) (string, error) {
 
 	pattern = `[\x00-\x08]|[\x0E-\x1F]|\x7F|\xC2[\x80-\x84\x86-\x9F]|\xEF\xBB\xBF|\xE2\x81[\xAA-\xAF]|\xEF\xBF[\xB9-\xBA]|\xF3\xA0[\x80-\x81][\x80-\xBF]|\xED[\xA0-\xBF][\x80-\xBF]|\xf4[\x90-\xbf][\x80-\xbf][\x80-\xbf]`
 
-	output, err = scrub(pattern, input)
+	output, err = scrub(output, pattern)
+	log.Println(output)
 
 	if err != nil {
 		return "", err
@@ -48,12 +50,12 @@ func SanitizeString(input string) (string, error) {
 	if sanitize_strip_reserved {
 
 		pattern = `\p{Cn}`
-		output, err = scrub(pattern, input)
+		output, err = scrub(output, pattern)
 
 	} else {
 
 		pattern = `((\xF4\x8F|\xEF|\xF0\x9F|\xF0\xAF|\xF0\xBF|((\xF1|\xF2|\xF3)(\x8F|\x9F|\xAF|\xBF)))\xBF(\xBE|\xBF))|\xEF\xB7[\x90-\xAF]`
-		output, err = scrub(input, pattern)
+		output, err = scrub(output, pattern)
 	}
 
 	if err != nil {
@@ -94,12 +96,16 @@ func SanitizeString(input string) (string, error) {
 	return output, nil
 }
 
-/*
-func SanitizeInt32 (input string) (int32, error) {
+func SanitizeInt32(input string) (int32, error) {
 
-     return strconv.ParseInt(input, 10, 32)
+	output, err := strconv.ParseInt(input, 10, 32)
+
+	if err != nil {
+		return 0, err
+	}
+
+	return int32(output), nil
 }
-*/
 
 func SanitizeInt64(input string) (int64, error) {
 
