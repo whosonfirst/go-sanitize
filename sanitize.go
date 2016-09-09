@@ -1,12 +1,16 @@
 package sanitize
 
 // https://github.com/exflickr/flamework/blob/master/www/include/lib_sanitize.php
+// https://blog.golang.org/strings
+// https://golang.org/pkg/regexp/syntax/
 
 import (
+       "errors"
 	_ "log"
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 type Options struct {
@@ -39,6 +43,10 @@ func DebugOptions() *Options {
 
 func SanitizeString(input string, options *Options) (string, error) {
 
+     if !utf8.ValidString(input){
+     	return "", errors.New("Invalid UTF8 string")
+     }
+     
 	var output string
 	var err error
 
