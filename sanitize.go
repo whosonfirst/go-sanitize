@@ -14,17 +14,25 @@ import (
 )
 
 type Options struct {
-	StripReserved     bool
-	AllowNewlines     bool
-	replacementString string
+	StripReserved      bool
+	AllowNewlines      bool
+	replacementString  string
+	replacementTab     string
+	replacementLF      string
+	replacementFF      string
+	replacementUnknown string
 }
 
 func DefaultOptions() *Options {
 
 	o := Options{
-		StripReserved:     false,
-		AllowNewlines:     false,
-		replacementString: "",
+		StripReserved:      false,
+		AllowNewlines:      false,
+		replacementString:  "",
+		replacementLF:      " ",
+		replacementFF:      " ",
+		replacementTab:     " ",
+		replacementUnknown: "?",
 	}
 
 	return &o
@@ -33,9 +41,13 @@ func DefaultOptions() *Options {
 func DebugOptions() *Options {
 
 	o := Options{
-		StripReserved:     false,
-		AllowNewlines:     false,
-		replacementString: " { SANITIZED } ",
+		StripReserved:      false,
+		AllowNewlines:      false,
+		replacementString:  " { SANITIZED } ",
+		replacementLF:      " { SANITIZED } ",
+		replacementFF:      " { SANITIZED } ",
+		replacementTab:     " { SANITIZED } ",
+		replacementUnknown: " { SANITIZED } ",
 	}
 
 	return &o
@@ -108,8 +120,8 @@ func SanitizeString(input string, options *Options) (string, error) {
 		return "", err
 	}
 
-	lf := options.replacementString
-	ff := options.replacementString
+	lf := options.replacementLF
+	ff := options.replacementLF
 
 	if options.AllowNewlines {
 		lf = "\n"
@@ -120,14 +132,14 @@ func SanitizeString(input string, options *Options) (string, error) {
 		"\xE2\x80\xA8": lf, // U+2028
 		"\xE2\x80\xA9": ff, // U+2029
 		"\xC2\x85":     lf, // EBCDIC Next Line / NEL
-		"\x09":         " ",
+		"\x09":         options.replacementTab,
 		"\x0B":         ff,
 		"\x0C":         ff,
 		"\r\n":         lf,
 		"\r":           lf,
 		"\n":           lf,
-		"\xEF\xBF\xBC": "?", // U+FFFC
-		"\xEF\xBF\xBD": "?", // U+FFFD
+		"\xEF\xBF\xBC": options.replacementUnknown, // U+FFFC
+		"\xEF\xBF\xBD": options.replacementUnknown, // U+FFFD
 	}
 
 	lookup_keys := make([]string, 0)
