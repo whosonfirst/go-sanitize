@@ -23,64 +23,108 @@ func init() {
 
 	/*
 
-			evil codepoints, lib_sanitize says:
+		evil codepoints, lib_sanitize says:
 
-			U+0000..U+0008		00000000..00001000				\x00..\x08				[\x00-\x08]
-			U+000E..U+001F		00001110..00011111				\x0E..\x1F				[\x0E-\x1F]
-			U+007F..U+0084		01111111..10000100				\x7F,\xC2\x80..\xC2\x84			\x7F|\xC2[\x80-\x84\x86-\x9F]
-			U+0086..U+009F		10000110..10011111				\xC2\x86..\xC2\x9F			^see above^
+		U+0000..U+0008		00000000..00001000				\x00..\x08				[\x00-\x08]
+		U+000E..U+001F		00001110..00011111				\x0E..\x1F				[\x0E-\x1F]
+		U+007F..U+0084		01111111..10000100				\x7F,\xC2\x80..\xC2\x84			\x7F|\xC2[\x80-\x84\x86-\x9F]
+		U+0086..U+009F		10000110..10011111				\xC2\x86..\xC2\x9F			^see above^
 
-			go-sanitize says we are actually doing this for "U+0086..U+009F" (20160909/thisisaaronland)
+		go-sanitize says we are actually doing this for "U+0086..U+009F" (20160909/thisisaaronland)
 
-	                "\\x7F",
-	                "(?:\\x7F|\\xC2)?[\\x80-\\x84\\x86-\\x9F]",
+		"\\x7F",
+		"(?:\\x7F|\\xC2)?[\\x80-\\x84\\x86-\\x9F]",
 
-			lib_sanitize goes on to say:
+		lib_sanitize goes on to say:
 
-			U+FEFF			1111111011111111				\xEF\xBB\xBF				\xEF\xBB\xBF
+		U+FEFF			1111111011111111				\xEF\xBB\xBF				\xEF\xBB\xBF
 
-			go-sanitize says we are actually doing this for "U+FEFF" because the pattern in lib_sanitize
-			does not seem to work... (20160909/thisisaaronland)
+		go-sanitize says we are actually doing this for "U+FEFF" because the pattern in lib_sanitize
+		does not seem to work... (20160909/thisisaaronland)
 
-			"\x{FEFF}"
+		"\x{FEFF}"
 
-			lib_sanitize goes on to say:
-				
-			U+206A..U+206F		10000001101010..10000001101111			\xE2\x81\xAA..\xE2\x81\xAF		\xE2\x81[\xAA-\xAF]
-			U+FFF9..U+FFFA		1111111111111001..1111111111111010		\xEF\xBF\xB9..\xEF\xBF\xBA		\xEF\xBF[\xB9-\xBA]
+		lib_sanitize goes on to say:
 
-			go-sanitize says we are actually doing this for "U+FFF9" because the pattern in lib_sanitize
-			does not seem to work... (20160909/thisisaaronland)
+		U+206A..U+206F		10000001101010..10000001101111			\xE2\x81\xAA..\xE2\x81\xAF		\xE2\x81[\xAA-\xAF]
+		U+FFF9..U+FFFA		1111111111111001..1111111111111010		\xEF\xBF\xB9..\xEF\xBF\xBA		\xEF\xBF[\xB9-\xBA]
 
-			"\x{FFF9}"
-				
-			lib_sanitize goes on to say:
+		go-sanitize says we are actually doing this for "U+FFF9" because the pattern in lib_sanitize
+		does not seem to work... (20160909/thisisaaronland)
 
-			U+E0000..U+E007F	11100000000000000000..11100000000001111111	\xF3\xA0\x80\x80..\xF3\xA0\x81\xBF	\xF3\xA0[\x80-\x81][\x80-\xBF]
+		"\x{FFF9}"
 
-			go-sanitize says we aren't able to match '11100000000000000000 U+E0000 '\U000e0000'  f3  a0  80  80'
-			through '11100000000001111110 U+E007E '\U000e007e'  f3  a0  81  be' because... again, I am not really
-			sure and for some reason neither "\\x{E0000}-\\x{E007F}" or "\\x{000e0000}-\\x{000e007f}" work either...
-			(20160909/thisisaaronland)
+		lib_sanitize goes on to say:
 
-			lib_sanitize goes on to say:
+		U+E0000..U+E007F	11100000000000000000..11100000000001111111	\xF3\xA0\x80\x80..\xF3\xA0\x81\xBF	\xF3\xA0[\x80-\x81][\x80-\xBF]
 
-			U+D800..U+DFFF		1101100000000000..1101111111111111		\xED\xA0\x80..\xED\xBF\xBF		\xED[\xA0-\xBF][\x80-\xBF]
-			U+110000..U+13FFFF	100010000000000000000..100111111111111111111	\xf4\x90\x80\x80..\xf4\xbf\xbf\xbf	\xf4[\x90-\xbf][\x80-\xbf][\x80-\xbf]
+		go-sanitize says we aren't able to match '11100000000000000000 U+E0000 '\U000e0000'  f3  a0  80  80'
+		through '11100000000001111110 U+E007E '\U000e007e'  f3  a0  81  be' because... again, I am not really
+		sure and for some reason neither "\\x{E0000}-\\x{E007F}" or "\\x{000e0000}-\\x{000e007f}" work either...
+		(20160909/thisisaaronland)
+
+		lib_sanitize goes on to say:
+
+		U+D800..U+DFFF		1101100000000000..1101111111111111		\xED\xA0\x80..\xED\xBF\xBF		\xED[\xA0-\xBF][\x80-\xBF]
+		U+110000..U+13FFFF	100010000000000000000..100111111111111111111	\xf4\x90\x80\x80..\xf4\xbf\xbf\xbf	\xf4[\x90-\xbf][\x80-\xbf][\x80-\xbf]
+
+	*/
+
+	/*
+
+		go-sanitize says, you might be wondering "what is all this stuff anyway..."
+
+		U+0000..U+0008
+		http://www.fileformat.info/info/unicode/category/Cc/index.htm
+		http://www.fileformat.info/info/unicode/block/basic_latin/index.htm
+
+		U+000E..U+001F
+		http://www.fileformat.info/info/unicode/category/Cc/index.htm
+		http://www.fileformat.info/info/unicode/block/basic_latin/index.htm
+
+		U+007F..U+0084
+		http://www.fileformat.info/info/unicode/category/Cc/index.htm
+		http://www.fileformat.info/info/unicode/block/basic_latin/index.htm
+
+		U+0086..U+009F
+		http://www.fileformat.info/info/unicode/category/Cc/index.htm
+		http://www.fileformat.info/info/unicode/block/latin_supplement/index.htm
+
+		U+FEFF - your old friend the "ZERO WIDTH NO-BREAK SPACE" or "BYTE ORDER MARK"
+		http://www.fileformat.info/info/unicode/char/feff/index.htm
+
+		U+206A..U+206F
+		http://www.fileformat.info/info/unicode/category/Cf/index.htm
+		http://www.fileformat.info/info/unicode/block/general_punctuation/index.htm
+
+		U+FFF9..U+FFFA
+		http://www.fileformat.info/info/unicode/category/Cf/index.htm
+		http://www.fileformat.info/info/unicode/block/specials/index.htm
+
+		U+E0000..U+E007F
+		http://www.fileformat.info/info/unicode/category/Cf/index.htm
+		http://www.fileformat.info/info/unicode/block/tags/index.htm
+		https://en.wikipedia.org/wiki/Tags_(Unicode_block)
+
+		U+D800..U+DFFF
+		http://www.fileformat.info/info/unicode/block/high_surrogates/index.htm
+		http://www.fileformat.info/info/unicode/block/low_surrogates/index.htm
+
+		U+110000..U+13FFFF
 
 	*/
 
 	evil_codepoints := []string{
 		"[\\x00-\\x08]",
 		"[\\x0E-\\x1F]",
-		"\\x7F",						// deviates from lib_sanitize
-		"(?:\\x7F|\\xC2)?[\\x80-\\x84\\x86-\\x9F]",		// deviates from lib_sanitize
+		"\\x7F", // deviates from lib_sanitize
+		"(?:\\x7F|\\xC2)?[\\x80-\\x84\\x86-\\x9F]", // deviates from lib_sanitize
 		"\\xEF\\xBB\\xBF",
-		"\\x{FEFF}",						// deviates from lib_sanitize
+		"\\x{FEFF}", // deviates from lib_sanitize
 		"\\xE2\\x81[\\xAA-\\xAF]",
-		"\\x{FFF9}",						// deviates from lib_sanitize
-		"\\xEF\\xBF[\\xB9-\\xBA]",            
-		"\\xF3\\xA0[\\x80-\\x81][\\x80-\\xBF]",			// does not always work (see above)
+		"\\x{FFF9}", // deviates from lib_sanitize
+		"\\xEF\\xBF[\\xB9-\\xBA]",
+		"\\xF3\\xA0[\\x80-\\x81][\\x80-\\xBF]", // does not always work (see above)
 		"\\xED[\\xA0-\\xBF][\\x80-\\xBF]",
 		"\\xF4[\\x90-\\xbf][\\x80-\\xbf][\\x80-\\xbf]",
 	}
