@@ -8,6 +8,7 @@ package sanitize
 
 import (
 	"errors"
+	"fmt"
 	_ "log"
 	"regexp"
 	"strconv"
@@ -60,7 +61,8 @@ func init() {
 
 		go-sanitize says we aren't able to match '11100000000000000000 U+E0000 '\U000e0000'  f3  a0  80  80'
 		through '11100000000001111110 U+E007E '\U000e007e'  f3  a0  81  be' because... again, I am not really
-		sure and for some reason neither "\\x{E0000}-\\x{E007F}" or "\\x{000e0000}-\\x{000e007f}" work either...
+		sure but we are brute-forcing the issue by assigning each individual codepoint from the Tags block
+		below because apparently Go doesn't like "\x{FOO} - \x{BAR}" ranges because ... computers, I guess
 		(20160909/thisisaaronland)
 
 		lib_sanitize goes on to say:
@@ -104,7 +106,7 @@ func init() {
 		U+E0000..U+E007F
 		http://www.fileformat.info/info/unicode/category/Cf/index.htm
 		http://www.fileformat.info/info/unicode/block/tags/index.htm
-		https://en.wikipedia.org/wiki/Tags_(Unicode_block)
+		https://en.wikipedia.org/wiki/Tags_(Unicode_block) <-- just stop a take a moment to let this one sink in...
 
 		U+D800..U+DFFF
 		http://www.fileformat.info/info/unicode/block/high_surrogates/index.htm
@@ -127,6 +129,27 @@ func init() {
 		"\\xF3\\xA0[\\x80-\\x81][\\x80-\\xBF]", // does not always work (see above)
 		"\\xED[\\xA0-\\xBF][\\x80-\\xBF]",
 		"\\xF4[\\x90-\\xbf][\\x80-\\xbf][\\x80-\\xbf]",
+	}
+
+	/*
+
+		go-sanitize says this is ugly and this is not elegant but it seems to work
+		so we will tolerate it until we can figure out why the RE above doesn't
+		work... also see notes above (20160909/thisisaaronland)
+
+	*/
+
+	lo, _ := strconv.ParseUint("11100000000000000000", 2, 32)
+	hi, _ := strconv.ParseUint("11100000000001111111", 2, 32)
+
+	for i := lo; i < hi; i++ {
+
+		r := rune(i)
+		u := fmt.Sprintf("%U", r)
+		u = strings.Replace(u, "U+", "", -1)
+		tag := "\\x{" + u + "}"
+
+		evil_codepoints = append(evil_codepoints, tag)
 	}
 
 	re_evil = regexp.MustCompile(strings.Join(evil_codepoints, "|"))
